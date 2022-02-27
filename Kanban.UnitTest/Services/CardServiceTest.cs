@@ -77,7 +77,7 @@ namespace Kanban.UnitTest.Services
 
         #region Mocks
 
-        private IEnumerable<Card> MockCard => 
+        private IEnumerable<Card> MockCard =>
             new List<Card>
             {
                 new Card

@@ -1,7 +1,6 @@
 ﻿using Kanban.Api.Models;
 using Kanban.Domain.Entities;
 using Kanban.Domain.Interfaces.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
