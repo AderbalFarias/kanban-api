@@ -36,8 +36,8 @@ namespace Kanban.Domain.Services
             }
             else
             {
-                _logger.LogError($"Card not found Card Id: {entity.Id}");
-                throw new Exception("Card not found");
+                _logger.LogError($"Card Id not found in the database: {entity.Id}");
+                throw new KeyNotFoundException("Card not found");
             }
 
             //card.Titulo = entity.Titulo;
@@ -55,8 +55,8 @@ namespace Kanban.Domain.Services
             }
             else
             {
-                _logger.LogError($"Card not found Card Id: {entity.Id}");
-                throw new Exception("Card not found");
+                _logger.LogError($"Card Id not found in the database: {entity.Id}");
+                throw new KeyNotFoundException("Card not found");
             }
         }
     }
