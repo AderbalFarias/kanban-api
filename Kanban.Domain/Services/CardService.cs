@@ -45,17 +45,17 @@ namespace Kanban.Domain.Services
             //card.Lista = entity.Lista;
         }
 
-        public async Task Delete(Card entity)
+        public async Task Delete(Guid id)
         {
-            var card = await _baseRepository.GetAnyAsync<Card>(card => card.Id == entity.Id);
+            var card = await _baseRepository.GetObjectAsync<Card>(card => card.Id == id);
 
-            if (card)
+            if (card != null)
             {
-                await _baseRepository.Delete(entity);
+                await _baseRepository.Delete(card);
             }
             else
             {
-                _logger.LogError($"Card Id not found in the database: {entity.Id}");
+                _logger.LogError($"Card Id not found in the database: {id}");
                 throw new KeyNotFoundException("Card not found");
             }
         }

@@ -168,7 +168,7 @@ namespace Kanban.UnitTest.Services
         {
             var entity = MockCard.First();
 
-            var logException = await Record.ExceptionAsync(async () => await _cardServcice.Delete(entity));
+            var logException = await Record.ExceptionAsync(async () => await _cardServcice.Delete(entity.Id));
 
             Assert.Contains($"Card not found", logException.Message);
         }
@@ -178,15 +178,13 @@ namespace Kanban.UnitTest.Services
         {
             var entity = MockCard.First();
 
-            await Assert.ThrowsAsync<KeyNotFoundException>(async () => await _cardServcice.Delete(entity));
+            await Assert.ThrowsAsync<KeyNotFoundException>(async () => await _cardServcice.Delete(entity.Id));
         }
 
         [Fact]
         public async Task Delete_Should_Be_Called_Once()
         {
-            var entity = MockCard.First();
-
-            await _cardServcice.Delete(CardResults.First());
+            await _cardServcice.Delete(CardResults.First().Id);
 
             _mockBaseRepository.Verify(x => x.Delete(CardResults.First()), Times.Once);
         }

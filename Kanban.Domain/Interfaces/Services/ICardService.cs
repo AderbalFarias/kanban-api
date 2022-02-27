@@ -11,6 +11,6 @@ namespace Kanban.Domain.Interfaces.Services
         Task<Card> GetById(Guid id);
         Task Add(Card entity);
         Task Update(Card entity);
-        Task Delete(Card entity);
+        Task Delete(Guid id);
     }
 }
