@@ -9,6 +9,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using System;
+using System.IO;
+using System.Reflection;
 
 namespace Kanban.Api
 {
@@ -23,6 +25,7 @@ namespace Kanban.Api
         }
 
         public IConfiguration Configuration { get; }
+
         public IWebHostEnvironment Environment { get; }
 
         // This method gets called by the runtime. 
@@ -59,9 +62,14 @@ namespace Kanban.Api
                     {
                         Name = "Aderbal Farias",
                         Email = "aderbalfarias@hotmail.com",
-                        Url = new Uri("https://aderbalfarias.com")
+                        Url = new Uri("https://aderbalfarias.github.io/")
                     }
                 });
+
+                // Set the comments path for the Swagger JSON and UI.
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
             });
         }
 
@@ -97,9 +105,8 @@ namespace Kanban.Api
                 app.UseMiddleware<ExceptionMiddleware>();
                 app.UseExceptionHandler("/Error");
                 app.UseStatusCodePagesWithReExecute("/Error/{0}");
-                app.UseHsts();
-
-                app.UseHttpsRedirection();
+                //app.UseHsts();
+                //app.UseHttpsRedirection();
             }
 
             app.UseRouting();

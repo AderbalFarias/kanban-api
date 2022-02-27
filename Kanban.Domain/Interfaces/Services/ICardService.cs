@@ -7,10 +7,10 @@ namespace Kanban.Domain.Interfaces.Services
 {
     public interface ICardService
     {
-        Task<IEnumerable<Card>> GetAll();
-        Task<Card> GetById(Guid id);
-        Task Add(Card entity);
-        Task Update(Card entity);
-        Task Delete(Guid id);
+        Task<IEnumerable<Card>> GetAllAsync();
+        Task<Card> GetByIdAsync(Guid id);
+        Task<Card> AddAsync(Card entity);
+        Task UpdateAsync(Card entity);
+        Task DeleteAsync(Card entity);
     }
 }

@@ -70,12 +70,7 @@ namespace Kanban.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetAllAsync()
-        {
-            var result = await _cardService.GetAll();
-
-            return Ok(result);
-        }
+        public async Task<IActionResult> GetAllAsync() => Ok(await _cardService.GetAllAsync());
 
         /// <summary>
         /// Get a specific card based on its id
@@ -108,10 +103,10 @@ namespace Kanban.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetById(Guid id) => Ok(await _cardService.GetById(id));
+        public async Task<IActionResult> GetById(Guid id) => Ok(await _cardService.GetByIdAsync(id));
 
         /// <summary>
-        /// Create a new card object
+        /// Create a new card on kanban
         /// </summary>
         /// <remarks>
         /// Sample Request: 
@@ -120,17 +115,14 @@ namespace Kanban.Api.Controllers
         ///     
         /// Sample Model:
         /// 
-        ///     [
-        ///         {
-        ///             Titulo: "x1",
-        ///             Conteudo: "x2",
-        ///             Lista: "x3"
-        ///         }
-        ///     ]
+        ///     {
+        ///         Titulo: "x1",
+        ///         Conteudo: "x2",
+        ///         Lista: "x3"
+        ///     }
         ///     
         /// </remarks>
         /// <response code="200">Returns a collection of cards</response>
-        /// <response code="204">Model was null</response>
         /// <response code="400">Validation failed</response>
         /// <response code="401">Access Unauthorized</response>
         /// <response code="500">Internal error</response>
@@ -140,37 +132,25 @@ namespace Kanban.Api.Controllers
         [EnableCors]
         [Route("cards")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Add(CardModel model)
         {
-            var controller = typeof(CardController).Name;
-
-            _logger.LogInformation($"Save method on {controller} started");
-
-            if (model == null)
+            if (ModelState.IsValid && model.Id == Guid.Empty)
             {
-                _logger.LogWarning($"Save method on {controller} did not find any value in the request");
+                _logger.LogWarning($"Post request inválido {typeof(CardController).Name}");
 
-                return NoContent();
+                return BadRequest();
             }
 
-            await _cardService.Add(new Card
-            {
-                Titulo = model.Titulo,
-                Conteudo = model.Conteudo,
-                Lista = model.Lista
-            });
+            var card = await _cardService.AddAsync(model.MapToEntityAdd());
 
-            _logger.LogInformation($"Save method on {controller} finished successfully");
-
-            return Ok();
+            return Ok(card);
         }
 
         /// <summary>
-        /// Update card
+        /// Update the card
         /// </summary>
         /// <remarks>
         /// Sample Request: 
@@ -179,14 +159,12 @@ namespace Kanban.Api.Controllers
         ///     
         /// Sample Model:
         /// 
-        ///     [
-        ///         {
-        ///             Id: "c69a92d8-476e-4d29-bb6c-845cf703b032",
-        ///             Titulo: "x1",
-        ///             Conteudo: "x2",
-        ///             Lista: "x3"
-        ///         }
-        ///     ]
+        ///     {
+        ///         Id: "c69a92d8-476e-4d29-bb6c-845cf703b032",
+        ///         Titulo: "x1",
+        ///         Conteudo: "x2",
+        ///         Lista: "x3"
+        ///     }
         ///     
         /// </remarks>
         /// <response code="200">Returns a collection of cards</response>
@@ -207,32 +185,32 @@ namespace Kanban.Api.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Update(Guid id, CardModel model)
         {
-            var controller = typeof(CardController).Name;
+            if (model.Id == Guid.Empty)
+                return NotFound();
 
-            _logger.LogInformation($"Update method on {controller} started");
-
-            if (model == null)
+            if (ModelState.IsValid && model.Id == id)
             {
-                _logger.LogWarning($"Update method on {controller} did not find any value in the request");
+                _logger.LogWarning($"Put request inválido {typeof(CardController).Name}");
 
-                return NoContent();
+                return BadRequest();
             }
 
-            await _cardService.Update(new Card
+            try 
             {
-                Id = model.Id,
-                Titulo = model.Titulo,
-                Conteudo = model.Conteudo,
-                Lista = model.Lista
-            });
+                await _cardService.UpdateAsync(model.MapToEntity());
+                _logger.LogInformation($"{DateTime.UtcNow} - Card {id} - {model.Titulo} - Alterar");
 
-            _logger.LogInformation($"Update method on {controller} finished successfully");
-
-            return Ok();
+                return Ok(await _cardService.GetByIdAsync(id));
+            }
+            catch (Exception ex) 
+            {
+                _logger.LogError(ex.ToString());
+                return NotFound();
+            }
         }
 
         /// <summary>
-        /// Remove Card object
+        /// Remove card from kanban
         /// </summary>
         /// <remarks>
         /// Sample Request: 
@@ -257,15 +235,22 @@ namespace Kanban.Api.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var controller = typeof(CardController).Name;
+            if (id == Guid.Empty)
+            {
+                _logger.LogWarning($"Delete request inválido on {typeof(CardController).Name}");
 
-            _logger.LogInformation($"Delete method on {controller} started");
+                return NotFound();
+            }
 
-            await _cardService.Delete(id);
+            var card = await _cardService.GetByIdAsync(id);
 
-            _logger.LogInformation($"Delete method on {controller} finished successfully");
+            if (card == null)
+                return NotFound();
 
-            return Ok();
+            await _cardService.DeleteAsync(card);
+            _logger.LogInformation($"{DateTime.UtcNow} - Card {id} - {card.Titulo} - Removido");
+
+            return Ok(_cardService.GetAllAsync());
         }
     }
 }

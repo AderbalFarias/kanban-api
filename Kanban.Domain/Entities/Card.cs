@@ -4,12 +4,27 @@ namespace Kanban.Domain.Entities
 {
     public class Card
     {
-        public Guid Id { get; set; }
+        public Card(Guid id, string titulo, string conteudo, string lista)
+        {
+            this.Id = id;
+            this.Titulo = titulo;
+            this.Conteudo = conteudo;
+            this.Lista = lista;
+        }
 
-        public string Titulo { get; set; }
+        public Card(string titulo, string conteudo, string lista)
+        {
+            this.Titulo = titulo;   
+            this.Conteudo = conteudo;
+            this.Lista = lista;
+        }
 
-        public string Conteudo { get; set; }
+        public Guid Id { get; private set; }
 
-        public string Lista { get; set; }
+        public string Titulo { get; private set; }
+
+        public string Conteudo { get; private set; }
+
+        public string Lista { get; private set; }
     }
 }
