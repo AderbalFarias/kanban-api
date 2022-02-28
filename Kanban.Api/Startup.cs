@@ -3,16 +3,20 @@ using Kanban.Api.Middlewares;
 using Kanban.Api.Validators;
 using Kanban.Domain.Entities;
 using Kanban.IoC;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Text;
 
 namespace Kanban.Api
 {
@@ -50,6 +54,23 @@ namespace Kanban.Api
             services.Databases();
             services.Configure<AppSettings>(Configuration.GetSection(nameof(AppSettings)));
 
+            var appSetting = Configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+               .AddJwtBearer(options =>
+               {
+                   options.TokenValidationParameters = new TokenValidationParameters
+                   {
+                       ValidateIssuer = true,
+                       ValidateAudience = true,
+                       ValidateLifetime = true,
+                       ValidateIssuerSigningKey = true,
+                       ValidIssuer = appSetting.JwtIssuer,
+                       ValidAudience = appSetting.JwtAudience,
+                       IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(appSetting.JwtKey))
+                   };
+               });
+
             services.AddHealthChecks();
             services.AddControllers()
                 .AddFluentValidation(x => x.RegisterValidatorsFromAssembly(typeof(CardValidator).Assembly));
@@ -72,6 +93,33 @@ namespace Kanban.Api
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 c.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
+
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Description = @"JWT Authorization header using the Bearer scheme",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            },
+                            Scheme = "jwt",
+                            Name = "Bearer",
+                            In = ParameterLocation.Header,
+                        },
+                        new List<string>()
+                    }
+                });
             });
         }
 
@@ -85,8 +133,6 @@ namespace Kanban.Api
 
                 await next();
             });
-
-            app.UseAuthentication();
 
             logger.LogInformation($"In {env.EnvironmentName} environment");
 
@@ -112,7 +158,8 @@ namespace Kanban.Api
             }
 
             app.UseRouting();
-            //app.UseAuthorization();
+            app.UseAuthentication();
+            app.UseAuthorization();
             app.UseStaticFiles();
             app.UseCors();
             app.UseHealthChecksUI();

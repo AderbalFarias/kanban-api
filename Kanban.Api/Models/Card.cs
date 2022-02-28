@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Kanban.Api.Models
 {
-    //[Validator(typeof(CardValidator))]
     public class Card
     {
         [Key]
