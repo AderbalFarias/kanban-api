@@ -14,7 +14,7 @@ namespace Kanban.Domain.Entities
 
         public Card(string titulo, string conteudo, string lista)
         {
-            this.Titulo = titulo;   
+            this.Titulo = titulo;
             this.Conteudo = conteudo;
             this.Lista = lista;
         }

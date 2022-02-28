@@ -1,4 +1,7 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Kanban.Api.Middlewares;
+using Kanban.Api.Validators;
 using Kanban.Domain.Entities;
 using Kanban.IoC;
 using Microsoft.AspNetCore.Builder;
@@ -49,8 +52,7 @@ namespace Kanban.Api
             services.Configure<AppSettings>(Configuration.GetSection(nameof(AppSettings)));
 
             services.AddHealthChecks();
-
-            services.AddControllers();
+            services.AddControllers().AddFluentValidation(x => x.RegisterValidatorsFromAssembly(typeof(Startup).Assembly));
             //services.AddApiVersioning();
             services.AddSwaggerGen(c =>
             {

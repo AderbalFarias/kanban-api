@@ -43,13 +43,13 @@ namespace Kanban.UnitTest.Services
         private Task RepositorySetup()
         {
             _mockBaseRepository.Setup(s => s.Add(It.IsAny<Card>()))
-                .Returns(Task.FromResult(CardResults.First()));
+                .Returns(async () => await Task.FromResult(CardResults.First()));
 
             _mockBaseRepository.Setup(s => s.Update(It.IsAny<Card>()))
-                .Returns(Task.FromResult(1));
+                .Returns(async () => await Task.FromResult(1));
 
             _mockBaseRepository.Setup(s => s.Delete(It.IsAny<Card>()))
-                .Returns(Task.FromResult(1));
+                .Returns(async () => await Task.FromResult(1));
 
             _mockBaseRepository.Setup(s => s.GetAsync<Card>())
                 .Returns(async () => await Task.FromResult(CardResults));
@@ -149,24 +149,6 @@ namespace Kanban.UnitTest.Services
             await _cardServcice.UpdateAsync(CardResults.First());
 
             _mockBaseRepository.Verify(x => x.Update(CardResults.First()), Times.Once);
-        }
-
-        [Fact]
-        public async Task Delete_Should_Return_Exception_Message()
-        {
-            var entity = MockCard.First();
-
-            var logException = await Record.ExceptionAsync(async () => await _cardServcice.DeleteAsync(entity));
-
-            Assert.Contains($"Card not found in the database", logException.Message);
-        }
-
-        [Fact]
-        public async Task Delete_Should_Throw_Exception()
-        {
-            var entity = MockCard.First();
-
-            await Assert.ThrowsAsync<Exception>(async () => await _cardServcice.DeleteAsync(entity));
         }
 
         [Fact]

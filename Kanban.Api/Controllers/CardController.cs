@@ -1,5 +1,4 @@
 ﻿using Kanban.Api.Models;
-using Kanban.Domain.Entities;
 using Kanban.Domain.Interfaces.Services;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
@@ -21,7 +20,7 @@ namespace Kanban.Api.Controllers
     public class CardController : ControllerBase
     {
         private readonly ICardService _cardService;
-        private readonly ILogger _logger;
+        private readonly ILogger<CardController> _logger;
 
         public CardController
         (
@@ -135,9 +134,9 @@ namespace Kanban.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Add(CardModel model)
+        public async Task<IActionResult> Add(Card model)
         {
-            if (ModelState.IsValid && model.Id == Guid.Empty)
+            if (!ModelState.IsValid || model.Id != Guid.Empty)
             {
                 _logger.LogWarning($"Post request inválido {typeof(CardController).Name}");
 
@@ -183,26 +182,26 @@ namespace Kanban.Api.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Update(Guid id, CardModel model)
+        public async Task<IActionResult> Update(Guid id, Card model)
         {
             if (model.Id == Guid.Empty)
                 return NotFound();
 
-            if (ModelState.IsValid && model.Id == id)
+            if (!ModelState.IsValid || model.Id != id)
             {
                 _logger.LogWarning($"Put request inválido {typeof(CardController).Name}");
 
                 return BadRequest();
             }
 
-            try 
+            try
             {
                 await _cardService.UpdateAsync(model.MapToEntity());
-                _logger.LogInformation($"{DateTime.UtcNow} - Card {id} - {model.Titulo} - Alterar");
+                _logger.LogInformation($"{DateTime.UtcNow.ToString("dd/MM/yyyy HH:mm:ss")} - Card {id} - {model.Titulo} - Alterar");
 
                 return Ok(await _cardService.GetByIdAsync(id));
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 _logger.LogError(ex.ToString());
                 return NotFound();
@@ -248,9 +247,9 @@ namespace Kanban.Api.Controllers
                 return NotFound();
 
             await _cardService.DeleteAsync(card);
-            _logger.LogInformation($"{DateTime.UtcNow} - Card {id} - {card.Titulo} - Removido");
+            _logger.LogInformation($"{DateTime.UtcNow.ToString("dd/MM/yyyy HH:mm:ss")} - Card {id} - {card.Titulo} - Removido");
 
-            return Ok(_cardService.GetAllAsync());
+            return Ok(await _cardService.GetAllAsync());
         }
     }
 }
