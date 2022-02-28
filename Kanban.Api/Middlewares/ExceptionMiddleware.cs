@@ -22,7 +22,7 @@ namespace Kanban.Api.Middlewares
         (
             HttpContext httpContext,
             ILogger<ExceptionMiddleware> logger,
-            IOptions<AppSettings> appConfigKeys
+            IOptions<AppSettings> appSetting
         )
         {
             try
@@ -32,11 +32,11 @@ namespace Kanban.Api.Middlewares
             catch (Exception e)
             {
                 logger.LogError(e, $"Exception logged at {httpContext?.Request?.Path}");
-                await HandleExceptionAsync(httpContext, appConfigKeys.Value);
+                await HandleExceptionAsync(httpContext, appSetting.Value);
             }
         }
 
-        private async Task HandleExceptionAsync(HttpContext context, AppSettings appConfigKeys)
+        private async Task HandleExceptionAsync(HttpContext context, AppSettings appSetting)
         {
             var response = context.Response;
             response.ContentType = "application/json";
@@ -44,7 +44,7 @@ namespace Kanban.Api.Middlewares
 
             await response.WriteAsync(JsonConvert.SerializeObject(new
             {
-                Message = appConfigKeys.DefaultErrorMessage
+                Message = appSetting.DefaultErrorMessage
             }));
         }
     }

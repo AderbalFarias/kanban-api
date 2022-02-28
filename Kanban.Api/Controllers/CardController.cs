@@ -1,5 +1,6 @@
 ﻿using Kanban.Api.Models;
 using Kanban.Domain.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +13,7 @@ namespace Kanban.Api.Controllers
     /// <summary>
     /// Controller to allow kanban cards management 
     /// </summary>
-    //[Authorize]
+    [Authorize]
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     //[Route("api/v{version:apiVersion}")]
     //[ApiVersion("1.0")]
@@ -24,11 +25,11 @@ namespace Kanban.Api.Controllers
 
         public CardController
         (
-            ICardService CardService,
+            ICardService cardService,
             ILogger<CardController> logger
         )
         {
-            _cardService = CardService;
+            _cardService = cardService;
             _logger = logger;
         }
 

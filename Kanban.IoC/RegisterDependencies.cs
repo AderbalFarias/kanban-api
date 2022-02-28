@@ -14,6 +14,7 @@ namespace Kanban.IoC
         public static IServiceCollection Services(this IServiceCollection services)
         {
             services.AddScoped<ICardService, CardService>();
+            services.AddScoped<ITokenService, TokenService>();
 
             return services;
         }
