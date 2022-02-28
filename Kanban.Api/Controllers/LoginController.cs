@@ -27,7 +27,8 @@ namespace Kanban.Api.Controllers
         [EnableCors]
         [Route("login")]
         public IActionResult Add(UserLogin model)
-        {           
+        {
+            _logger.LogInformation($"Token requested by user {model.Login}");
             return Ok(_tokenService.Generate(model.MatToEntity()));
         }
     }
