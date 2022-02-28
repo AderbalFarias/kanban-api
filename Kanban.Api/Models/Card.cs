@@ -1,6 +1,4 @@
-﻿using Kanban.Api.Validators;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Kanban.Api.Models

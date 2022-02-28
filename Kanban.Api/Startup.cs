@@ -1,4 +1,3 @@
-using FluentValidation;
 using FluentValidation.AspNetCore;
 using Kanban.Api.Middlewares;
 using Kanban.Api.Validators;

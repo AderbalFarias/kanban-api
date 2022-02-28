@@ -1,6 +1,4 @@
 ﻿using Kanban.Api.Controllers;
-using Kanban.Api.Models;
-using Kanban.Domain.Entities;
 using Kanban.Domain.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -9,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Net;
 using System.Threading.Tasks;
 using Xunit;
@@ -77,7 +74,7 @@ namespace Kanban.UnitTest.Controllers
                 new Domain.Entities.Card(Guid.NewGuid(), "Titulo test 2", "Conteudo test 2", "Lista test 2")
             };
 
-        private Api.Models.Card MockNewCardModel => 
+        private Api.Models.Card MockNewCardModel =>
             new Api.Models.Card
             {
                 Titulo = "New titulo test 1",
