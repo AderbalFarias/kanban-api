@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
@@ -185,6 +186,63 @@ namespace Kanban.UnitTest.Controllers
 
             var notFoundResultObjectResult = Assert.IsType<NotFoundResult>(result);
             Assert.Equal((int)HttpStatusCode.NotFound, notFoundResultObjectResult.StatusCode);
+        }
+
+        [Theory]
+        [InlineData("Titulo 1", "Test 1", "")]
+        [InlineData("Titulo 2", "Test 2", null)]
+        [InlineData("", "Test", "Test")]
+        [InlineData(null, "Test", "Test d")]
+        [InlineData("xx", "", "Test xx")]
+        [InlineData("Test", null, "xxx")]
+        public async Task Add_Should_Return_BadRequest_InvalidModel(string titulo, string conteudo, string lista)
+        {
+            var card = new Api.Models.Card
+            {
+                Titulo = titulo,
+                Conteudo = conteudo,
+                Lista = lista
+            };
+
+            var validationContext = new ValidationContext(card, null, null);
+            var validationResults = new List<ValidationResult>();
+            Validator.TryValidateObject(card, validationContext, validationResults, true);
+            foreach (var validationResult in validationResults)
+                _cardController.ModelState.AddModelError(validationResult.MemberNames.First(), validationResult.ErrorMessage);
+
+            var result = await _cardController.Add(card);
+
+            var badRequestObjectResult = Assert.IsType<BadRequestResult>(result);
+            Assert.Equal((int)HttpStatusCode.BadRequest, badRequestObjectResult.StatusCode);
+        }
+
+        [Theory]
+        [InlineData("Titulo 1", "Test 1", "")]
+        [InlineData("Titulo 2", "Test 2", null)]
+        [InlineData("", "Test", "Test")]
+        [InlineData(null, "Test", "Test d")]
+        [InlineData("xx", "", "Test xx")]
+        [InlineData("Test", null, "xxx")]
+        public async Task Update_Should_Return_BadRequest_InvalidModel(string titulo, string conteudo, string lista)
+        {
+            var card = new Api.Models.Card
+            {
+                Titulo = titulo,
+                Conteudo = conteudo,
+                Lista = lista,
+                Id = CardResults.First().Id
+            };
+
+            var validationContext = new ValidationContext(card, null, null);
+            var validationResults = new List<ValidationResult>();
+            Validator.TryValidateObject(card, validationContext, validationResults, true);
+            foreach (var validationResult in validationResults)
+                _cardController.ModelState.AddModelError(validationResult.MemberNames.First(), validationResult.ErrorMessage);
+
+            var result = await _cardController.Update(card.Id, card);
+
+            var badRequestObjectResult = Assert.IsType<BadRequestResult>(result);
+            Assert.Equal((int)HttpStatusCode.BadRequest, badRequestObjectResult.StatusCode);
         }
 
         #endregion End Tests

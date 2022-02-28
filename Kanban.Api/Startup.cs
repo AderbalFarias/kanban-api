@@ -52,7 +52,8 @@ namespace Kanban.Api
             services.Configure<AppSettings>(Configuration.GetSection(nameof(AppSettings)));
 
             services.AddHealthChecks();
-            services.AddControllers().AddFluentValidation(x => x.RegisterValidatorsFromAssembly(typeof(Startup).Assembly));
+            services.AddControllers()
+                .AddFluentValidation(x => x.RegisterValidatorsFromAssembly(typeof(CardValidator).Assembly));
             //services.AddApiVersioning();
             services.AddSwaggerGen(c =>
             {
