@@ -18,7 +18,7 @@ namespace Kanban.Domain.Interfaces.Repositories
         Task<TEntity> GetObjectAsync<TEntity>(Expression<Func<TEntity, bool>> predicate) where TEntity : class;
         bool GetAny<TEntity>(Expression<Func<TEntity, bool>> predicate) where TEntity : class;
         Task<bool> GetAnyAsync<TEntity>(Expression<Func<TEntity, bool>> predicate) where TEntity : class;
-        Task<int> Add<TEntity>(TEntity entity);
+        Task<TEntity> Add<TEntity>(TEntity entity);
         Task<int> Update<TEntity>(TEntity entity);
         Task<int> Delete<TEntity>(TEntity entity);
     }

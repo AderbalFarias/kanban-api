@@ -43,13 +43,13 @@ namespace Kanban.UnitTest.Services
         private Task RepositorySetup()
         {
             _mockBaseRepository.Setup(s => s.Add(It.IsAny<Card>()))
-                .Returns(Task.FromResult(1));
+                .Returns(async () => await Task.FromResult(CardResults.First()));
 
             _mockBaseRepository.Setup(s => s.Update(It.IsAny<Card>()))
-                .Returns(Task.FromResult(1));
+                .Returns(async () => await Task.FromResult(1));
 
             _mockBaseRepository.Setup(s => s.Delete(It.IsAny<Card>()))
-                .Returns(Task.FromResult(1));
+                .Returns(async () => await Task.FromResult(1));
 
             _mockBaseRepository.Setup(s => s.GetAsync<Card>())
                 .Returns(async () => await Task.FromResult(CardResults));
@@ -80,20 +80,8 @@ namespace Kanban.UnitTest.Services
         private IEnumerable<Card> MockCard =>
             new List<Card>
             {
-                new Card
-                {
-                    Id = Guid.NewGuid(),
-                    Titulo = "Titulo test 1",
-                    Conteudo = "Conteudo test 1",
-                    Lista = "Lista test 1"
-                },
-                new Card
-                {
-                    Id = Guid.NewGuid(),
-                    Titulo = "Titulo test 2",
-                    Conteudo = "Conteudo test 2",
-                    Lista = "Lista test 2"
-                },
+                new Card(Guid.NewGuid(), "Titulo test 1", "Conteudo test 1", "Lista test 1"),
+                new Card(Guid.NewGuid(), "Titulo test 2", "Conteudo test 2", "Lista test 2")
             };
 
         #endregion End Mocks
@@ -103,7 +91,7 @@ namespace Kanban.UnitTest.Services
         [Fact]
         public async Task GetAll_Should_Return_2_Cards()
         {
-            var cards = await _cardServcice.GetAll();
+            var cards = await _cardServcice.GetAllAsync();
 
             Assert.NotNull(cards);
             Assert.Equal(2, cards.Count());
@@ -112,7 +100,7 @@ namespace Kanban.UnitTest.Services
         [Fact]
         public async Task GetById_Should_Return_Data()
         {
-            var entity = await _cardServcice.GetById(CardResults.First().Id);
+            var entity = await _cardServcice.GetByIdAsync(CardResults.First().Id);
 
             Assert.NotNull(entity);
             Assert.Equal(CardResults.First().Id, entity.Id);
@@ -122,7 +110,7 @@ namespace Kanban.UnitTest.Services
         [Fact]
         public async Task GetById_Should_Not_Return_Data()
         {
-            var entity = await _cardServcice.GetById(Guid.NewGuid());
+            var entity = await _cardServcice.GetByIdAsync(Guid.NewGuid());
 
             Assert.Null(entity);
         }
@@ -132,7 +120,7 @@ namespace Kanban.UnitTest.Services
         {
             var entity = MockCard.First();
 
-            await _cardServcice.Add(entity);
+            await _cardServcice.AddAsync(entity);
 
             _mockBaseRepository.Verify(x => x.Add(entity), Times.Once);
         }
@@ -142,7 +130,7 @@ namespace Kanban.UnitTest.Services
         {
             var entity = MockCard.First();
 
-            await Assert.ThrowsAsync<KeyNotFoundException>(async () => await _cardServcice.Update(entity));
+            await Assert.ThrowsAsync<Exception>(async () => await _cardServcice.UpdateAsync(entity));
         }
 
         [Fact]
@@ -150,41 +138,23 @@ namespace Kanban.UnitTest.Services
         {
             var entity = MockCard.First();
 
-            var logException = await Record.ExceptionAsync(async () => await _cardServcice.Update(entity));
+            var logException = await Record.ExceptionAsync(async () => await _cardServcice.UpdateAsync(entity));
 
-            Assert.Contains($"Card not found", logException.Message);
+            Assert.Contains($"Card not found in the database", logException.Message);
         }
 
         [Fact]
         public async Task Update_Should_Be_Called_Once()
         {
-            await _cardServcice.Update(CardResults.First());
+            await _cardServcice.UpdateAsync(CardResults.First());
 
             _mockBaseRepository.Verify(x => x.Update(CardResults.First()), Times.Once);
         }
 
         [Fact]
-        public async Task Delete_Should_Return_Exception_Message()
-        {
-            var entity = MockCard.First();
-
-            var logException = await Record.ExceptionAsync(async () => await _cardServcice.Delete(entity.Id));
-
-            Assert.Contains($"Card not found", logException.Message);
-        }
-
-        [Fact]
-        public async Task Delete_Should_Throw_Exception()
-        {
-            var entity = MockCard.First();
-
-            await Assert.ThrowsAsync<KeyNotFoundException>(async () => await _cardServcice.Delete(entity.Id));
-        }
-
-        [Fact]
         public async Task Delete_Should_Be_Called_Once()
         {
-            await _cardServcice.Delete(CardResults.First().Id);
+            await _cardServcice.DeleteAsync(CardResults.First());
 
             _mockBaseRepository.Verify(x => x.Delete(CardResults.First()), Times.Once);
         }

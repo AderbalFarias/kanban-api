@@ -47,10 +47,12 @@ namespace Kanban.Data.Repositories
         public async Task<bool> GetAnyAsync<TEntity>(Expression<Func<TEntity, bool>> predicate) where TEntity : class =>
             await _context.Set<TEntity>().AnyAsync(predicate);
 
-        public async Task<int> Add<TEntity>(TEntity entity)
+        public async Task<TEntity> Add<TEntity>(TEntity entity)
         {
             _context.Add(entity);
-            return await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
+
+            return entity;
         }
 
         public async Task<int> Update<TEntity>(TEntity entity)

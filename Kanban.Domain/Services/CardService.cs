@@ -19,14 +19,14 @@ namespace Kanban.Domain.Services
             _logger = logger;
         }
 
-        public async Task<IEnumerable<Card>> GetAll() => await _baseRepository.GetAsync<Card>();
+        public async Task<IEnumerable<Card>> GetAllAsync() => await _baseRepository.GetAsync<Card>();
 
-        public async Task<Card> GetById(Guid id) =>
+        public async Task<Card> GetByIdAsync(Guid id) =>
             await _baseRepository.GetObjectAsync<Card>(card => card.Id == id);
 
-        public async Task Add(Card entity) => await _baseRepository.Add(entity);
+        public async Task<Card> AddAsync(Card entity) => await _baseRepository.Add(entity);
 
-        public async Task Update(Card entity)
+        public async Task UpdateAsync(Card entity)
         {
             var card = await _baseRepository.GetAnyAsync<Card>(card => card.Id == entity.Id);
 
@@ -37,26 +37,20 @@ namespace Kanban.Domain.Services
             else
             {
                 _logger.LogError($"Card Id not found in the database: {entity.Id}");
-                throw new KeyNotFoundException("Card not found");
+                throw new Exception("Card not found in the database");
             }
-
-            //card.Titulo = entity.Titulo;
-            //card.Conteudo = entity.Conteudo;
-            //card.Lista = entity.Lista;
         }
 
-        public async Task Delete(Guid id)
+        public async Task DeleteAsync(Card entity)
         {
-            var card = await _baseRepository.GetObjectAsync<Card>(card => card.Id == id);
-
-            if (card != null)
+            if (entity != null)
             {
-                await _baseRepository.Delete(card);
+                await _baseRepository.Delete(entity);
             }
             else
             {
-                _logger.LogError($"Card Id not found in the database: {id}");
-                throw new KeyNotFoundException("Card not found");
+                _logger.LogError($"Card Id not found in the database: {entity.Id}");
+                throw new Exception("Card not found in the database");
             }
         }
     }

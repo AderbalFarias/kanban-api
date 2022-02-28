@@ -16,7 +16,7 @@ namespace Kanban.Data.Mappings
                 .ValueGeneratedOnAdd();
 
             builder.Property(p => p.Titulo)
-                .HasMaxLength(200)
+                .HasMaxLength(100)
                 .IsRequired();
 
             builder.Property(p => p.Conteudo)
@@ -24,7 +24,7 @@ namespace Kanban.Data.Mappings
                 .IsRequired();
 
             builder.Property(p => p.Lista)
-                .HasMaxLength(2000)
+                .HasMaxLength(50)
                 .IsRequired();
         }
     }
